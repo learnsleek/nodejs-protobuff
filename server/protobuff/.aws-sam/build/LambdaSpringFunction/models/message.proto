@@ -1,0 +1,5 @@
+ 
+message Message {
+    required string text = 1;
+    required string lang = 2;
+}

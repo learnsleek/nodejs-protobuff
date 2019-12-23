@@ -1,0 +1,6 @@
+Deployment Using cloudformation :- 
+
+aws cloudformation package --template-file template.yaml --output-template-file output-sam.yaml --s3-bucket spring-boot-amit1  --profile=mc
+
+
+aws cloudformation deploy --template-file output-sam.yaml --stack-name nodejs-express-protobuf-sample --capabilities CAPABILITY_IAM --profile=mc

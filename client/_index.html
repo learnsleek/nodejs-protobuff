@@ -1,0 +1,93 @@
+<html>
+  <head>
+    <script src="long.js"></script>
+    <script src="bytebuffer.js"></script>
+    <script src="protobuf.js"></script>
+    <script src="axios.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+        <h2>Select Colors To Get</h2>
+        <div class="dropdown">
+          <button type="button" id="dropdown-selected" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+            Colors
+          </button>
+          <ul class="dropdown-menu">
+            <li class="dropdown-item" href="#">All</li>
+            <li class="dropdown-item" href="#">Violet</li>
+            <li class="dropdown-item" href="#">Indigo</li>
+            <li class="dropdown-item" href="#">Blue</li>
+            <li class="dropdown-item" href="#">Green</li>
+            <li class="dropdown-item" href="#">Yellow</li>
+            <li class="dropdown-item" href="#">Orange</li>
+            <li class="dropdown-item" href="#">Red</li>
+          </ul>
+        </div>
+      </div>
+      <button onClick="getColors()">get Colors from server</button>
+
+    <pre id="content"></pre>
+    <button onClick="sendMessage()">send message to server</button>
+    <script type="text/javascript">
+      "use strict";
+      let ProtoBuf = dcodeIO.ProtoBuf
+      let Message = ProtoBuf
+        .loadProtoFile('./message.proto', (err, builder)=>{
+          Message = builder.build('Message')
+          loadMessage()
+        })
+
+      let loadMessage = ()=> {
+        axios.get('http://localhost:3000/api/messages', {responseType: 'arraybuffer'})
+          .then(function (response) {
+            console.log('Response from the server: ', response)
+            let msg = Message.decode(response.data)
+            console.log('Decoded message', msg)
+            document.getElementById('content').innerText = JSON.stringify(msg, null, 2)
+          })
+          .catch(function (response) {
+            console.log(response)
+          })
+      }
+      let sendMessage = ()=>{
+        let msg = new Message({text: 'yo', lang: 'slang'});
+        axios.post('http://localhost:3000/api/messages', msg.toArrayBuffer(),
+            { responseType: 'arraybuffer',
+            headers: {'Content-Type': 'application/octet-stream'}}
+          ).then(function (response) {
+            console.log(response)
+          })
+          .catch(function (response) {
+            console.log(response)
+          })
+      }
+
+  let getColors = (input)=> {
+        //let msg = new Colors({colorReq: input});
+        let msg = new Message({text: 'yo', lang: 'slang'});
+
+        axios.post('http://localhost:3000/api/colors', msg.toArrayBuffer(),
+            { responseType: 'arraybuffer',
+            headers: {'Content-Type': 'application/octet-stream'}}
+          ).then(function (response) {
+            console.log(response)
+          })
+          .catch(function (response) {
+            console.log(response)
+          })
+      };
+
+ $(".dropdown-menu li").click(function(){
+    $('#dropdown-selected').text($(this).text());
+    //alert($(this).text());
+    var selectedColor = $(this).text();
+    getColors(selectedColor);
+  });
+</script>
+ </body>
+</html>

@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+message ColorsList {
+  optional  string colorReq  = 0;
+  message Color {
+    required  string state= 1;
+  }
+  repeated Color col  = 2;
+}
+

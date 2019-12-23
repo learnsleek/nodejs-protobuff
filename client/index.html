@@ -1,0 +1,70 @@
+<html>
+  <head>
+    <script src="long.js"></script>
+    <script src="bytebuffer.js"></script>
+    <script src="protobuf.js"></script>
+    <script src="axios.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+      <div class="container">
+          <h2>Select Colors To Get</h2>
+          <div class="dropdown">
+            <button type="button" id="dropdown-selected" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+              Colors
+            </button>
+            <ul class="dropdown-menu">
+              <!-- <li class="dropdown-item" href="#">All</li> -->
+              <li class="dropdown-item" href="#">Violet</li>
+              <li class="dropdown-item" href="#">Indigo</li>
+              <li class="dropdown-item" href="#">Blue</li>
+              <li class="dropdown-item" href="#">Green</li>
+              <li class="dropdown-item" href="#">Yellow</li>
+              <li class="dropdown-item" href="#">Orange</li>
+              <li class="dropdown-item" href="#">Red</li>
+            </ul>
+          </div>
+    <pre id="content"></pre>
+  </div>
+  </body>
+  <script type="text/javascript">
+    "use strict";
+    let ProtoBuf = dcodeIO.ProtoBuf
+    let ColorsList = ProtoBuf
+      .loadProtoFile('./colors.proto', (err, builder)=>{
+        ColorsList = builder.build('ColorsList');
+        //console.log("ColorsList", ColorsList);
+      })
+    
+    let getColors = (input)=> {
+    let msg = new ColorsList({colorReq: input});
+    axios.post('https://v5dd1jnlob.execute-api.eu-central-1.amazonaws.com/Stage/api/colors', msg.toArrayBuffer(),
+        { responseType: 'arraybuffer',
+        headers: {'Content-Type': 'application/octet-stream'}}
+      ).then(function (response) {
+        console.log(response)
+        let msg = ColorsList.decode(response.data)
+            console.log('Decoded message', msg)
+            //document.getElementById('content').innerText = JSON.stringify(msg, null, 2)
+            document.getElementById('content').innerHTML = " ";
+            document.getElementById('content').innerHTML = JSON.stringify(msg);
+       //document.getElementById("content").innerHTML = response;
+      })
+      .catch(function (response) {
+        console.log(response)
+      })
+  };
+
+  $(".dropdown-menu li").click(function(){
+    $('#dropdown-selected').text($(this).text());
+    //alert($(this).text());
+    var selectedColor = $(this).text();
+    getColors(selectedColor);
+  });
+
+</script>
+</html>
